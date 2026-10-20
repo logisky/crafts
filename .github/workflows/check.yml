@@ -1,0 +1,23 @@
+# Every PR: build every craft from source, pack it, and check it against what
+# is already published. A craft whose content changed must bump its version;
+# a published version is never overwritten.
+name: check
+
+on:
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: corepack enable
+      - run: yarn install --immutable
+      - run: yarn check
+      - run: yarn test
+      - run: yarn build
+      - run: yarn registry pack
+      - run: yarn registry verify https://logisky.github.io/crafts/index.json

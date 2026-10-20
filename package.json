@@ -1,0 +1,20 @@
+{
+    "name": "logisheets-crafts",
+    "private": true,
+    "description": "The LogiSheets craft registry: craft sources, built and published as .craft packages to GitHub Pages.",
+    "license": "MIT",
+    "packageManager": "yarn@4.5.3",
+    "workspaces": [
+        "packages/*"
+    ],
+    "scripts": {
+        "build": "yarn workspaces foreach --all --topological-dev --exclude logisheets-crafts run build",
+        "check": "yarn workspaces foreach --all --exclude logisheets-crafts run check",
+        "registry": "node scripts/registry.mjs",
+        "test": "yarn workspaces foreach --all --exclude logisheets-crafts run test"
+    },
+    "devDependencies": {
+        "fflate": "^0.8.2",
+        "logisheets-craftsmith": "^0.1.0"
+    }
+}

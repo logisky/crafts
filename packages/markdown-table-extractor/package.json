@@ -1,0 +1,36 @@
+{
+    "name": "markdown-table-extractor",
+    "version": "0.1.0",
+    "label": {
+        "en": "Markdown Table Extractor",
+        "zh-CN": "Markdown 表格提取"
+    },
+    "description": "Parse GitHub-flavored Markdown tables into structured JSON (UMD bundle)",
+    "main": "dist/markdown-table-extractor.js",
+    "module": "dist/markdown-table-extractor.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "build": "vite build && craftsmith build .",
+        "pack": "craftsmith pack .",
+        "check": "craftsmith check ."
+    },
+    "keywords": [
+        "markdown",
+        "tables",
+        "remark",
+        "gfm"
+    ],
+    "author": "Jeremy He",
+    "license": "MIT",
+    "dependencies": {
+        "logisheets-web": "^1.16.1",
+        "remark-gfm": "^4.0.0",
+        "remark-parse": "^11.0.0",
+        "unified": "^11.0.0"
+    },
+    "devDependencies": {
+        "logisheets-craftsmith": "^0.1.0",
+        "typescript": "^6.0.0",
+        "vite": "^5.0.0"
+    }
+}

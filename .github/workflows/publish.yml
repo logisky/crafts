@@ -1,0 +1,57 @@
+# On main: build and pack every craft, add the versions not yet published to
+# the gh-pages branch, and push it. GitHub Pages serves that branch:
+#   https://logisky.github.io/crafts/index.json
+#   https://logisky.github.io/crafts/packages/<id>/<id>-<version>.craft
+#
+# gh-pages is append-only storage: `registry publish` copies new versions in
+# and refuses (failing the job) to change a published one.
+name: publish
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: corepack enable
+      - run: yarn install --immutable
+      - run: yarn build
+      - run: yarn registry pack
+
+      - name: Check out gh-pages (created on the first run)
+        run: |
+          git fetch origin gh-pages:gh-pages || true
+          if git show-ref --verify --quiet refs/heads/gh-pages; then
+            git worktree add site gh-pages
+          else
+            git worktree add --orphan -b gh-pages site
+          fi
+
+      - run: yarn registry publish site
+
+      - name: Push
+        working-directory: site
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "nothing new to publish"
+          else
+            git commit -m "Publish ${GITHUB_SHA::7}"
+            git push origin gh-pages
+          fi

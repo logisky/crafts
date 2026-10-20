@@ -1,0 +1,15 @@
+{
+  "name": "four-elements-core",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "scripts": {
+    "build": "echo \"four-elements-core: source-only package, no build step\"",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "logisheets": "^1.16.1",
+    "vitest": "^3.2.6"
+  }
+}

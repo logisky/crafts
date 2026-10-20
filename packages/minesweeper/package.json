@@ -1,0 +1,27 @@
+{
+    "name": "minesweeper",
+    "version": "0.1.0",
+    "label": {
+        "en": "Minesweeper",
+        "zh-CN": "扫雷"
+    },
+    "description": "Minesweeper on a LogiSheets grid — left-click to reveal, right-click to flag",
+    "main": "dist/minesweeper.js",
+    "module": "dist/minesweeper.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "build": "vite build && craftsmith build .",
+        "pack": "craftsmith pack .",
+        "check": "craftsmith check ."
+    },
+    "author": "Jeremy He",
+    "license": "MIT",
+    "dependencies": {
+        "logisheets-web": "^1.16.1"
+    },
+    "devDependencies": {
+        "logisheets-craftsmith": "^0.1.0",
+        "typescript": "^6.0.0",
+        "vite": "^5.0.0"
+    }
+}

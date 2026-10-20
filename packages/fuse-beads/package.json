@@ -1,0 +1,27 @@
+{
+    "name": "fuse-beads",
+    "version": "0.1.0",
+    "label": {
+        "en": "Fuse Beads",
+        "zh-CN": "电子拼豆"
+    },
+    "description": "Electronic fuse-beads (拼豆): paint a MARD-style bead board on a LogiSheets worksheet",
+    "main": "dist/fuse-beads.js",
+    "module": "dist/fuse-beads.js",
+    "types": "dist/index.d.ts",
+    "scripts": {
+        "build": "vite build && craftsmith build .",
+        "pack": "craftsmith pack .",
+        "check": "craftsmith check ."
+    },
+    "author": "Jeremy He",
+    "license": "MIT",
+    "dependencies": {
+        "logisheets-web": "^1.16.1"
+    },
+    "devDependencies": {
+        "logisheets-craftsmith": "^0.1.0",
+        "typescript": "^6.0.0",
+        "vite": "^5.0.0"
+    }
+}
