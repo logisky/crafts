@@ -105,6 +105,8 @@ function merge(index, packed, now) {
         entry.versions.push({
             version: m.version,
             hostApi: m.hostApi ?? 1,
+            // Per version, like hostApi: a later version may need more.
+            ...(m.requires?.length ? {requires: m.requires} : {}),
             url,
             sha256: p.sha256,
             size: p.bytes.byteLength,

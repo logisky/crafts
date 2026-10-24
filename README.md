@@ -65,6 +65,12 @@ panel (puzzle-piece button → **Install from file…**).
   Browse list outside dev builds (the debugger uses it).
 - Need a newer host API than 1? Set `"craftHostApi"` in `package.json`; older
   apps then refuse the package instead of running it broken.
+- **`"craftRequires": ["dataConnections"]`** names host capabilities the
+  craft cannot run without. Say what you NEED, not where you run: a host that
+  lacks one shows the craft as unavailable and refuses to install it, and the
+  craft starts working there the day that host gains it. Still check for the
+  API at runtime (`window.dataConnections`): a workbook can carry your saved
+  state to a host where you are not installed.
 
 ## The index
 
@@ -86,6 +92,7 @@ panel (puzzle-piece button → **Install from file…**).
     "versions": [{
       "version": "0.1.0",
       "hostApi": 1,
+      "requires": ["dataConnections"], // only when the package sets craftRequires
       "url": "packages/sudoku/sudoku-0.1.0.craft",   // relative to index.json
       "sha256": "…",           // the app checks every download against this
       "size": 14042,

@@ -1,0 +1,32 @@
+{
+    "name": "sql-query",
+    "craftId": "sql-query",
+    "label": {
+        "en": "SQL Query",
+        "zh-CN": "SQL 查询"
+    },
+    "version": "0.1.0",
+    "description": "Run SQL against a database connection the app holds and pull the result into a typed block; re-run to refresh",
+    "craftRequires": [
+        "dataConnections"
+    ],
+    "main": "dist/sql-query.js",
+    "module": "dist/sql-query.js",
+    "scripts": {
+        "check": "craftsmith check .",
+        "build": "vite build && craftsmith build .",
+        "pack": "craftsmith pack .",
+        "test": "vitest run"
+    },
+    "author": "Jeremy He",
+    "license": "MIT",
+    "dependencies": {
+        "logisheets-web": "^1.16.1"
+    },
+    "devDependencies": {
+        "logisheets-craftsmith": "^0.1.0",
+        "typescript": "^6.0.0",
+        "vite": "^5.0.0",
+        "vitest": "^3.2.6"
+    }
+}

@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <title data-i18n="title">SQL Query</title>
+        <style>
+            * { box-sizing: border-box; }
+            body {
+                margin: 0; padding: 14px;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", sans-serif;
+                background: #f5f5f7; color: #111827; font-size: 13px;
+            }
+            h1 { margin: 0 0 4px; font-size: 18px; }
+            .subtitle { color: #6b7280; font-size: 12px; margin-bottom: 14px; }
+            .card {
+                background: #fff; border: 1px solid #e5e7eb; border-radius: 8px;
+                padding: 12px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(15,23,42,0.06);
+            }
+            .row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+            .row + .row, .row + textarea, textarea + .row { margin-top: 10px; }
+            label.field { display: inline-flex; align-items: center; gap: 6px; color: #4b5563; }
+            select, input, textarea {
+                font: inherit; padding: 6px 8px; border: 1px solid #d1d5db; border-radius: 6px; background: #fff;
+            }
+            select { flex: 1; min-width: 140px; }
+            input[type=number] { width: 90px; }
+            textarea {
+                display: block; width: 100%; min-height: 140px; resize: vertical;
+                font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px;
+            }
+            .btn {
+                display: inline-flex; align-items: center; justify-content: center;
+                padding: 6px 14px; font-size: 13px; border-radius: 999px;
+                border: 1px solid #d1d5db; background: #f9fafb; color: #111827; cursor: pointer;
+            }
+            .btn:hover { background: #e5e7eb; }
+            .btn:disabled { opacity: .5; cursor: default; }
+            .btn-primary { border-color: #2563eb; background: #2563eb; color: #fff; }
+            .btn-primary:hover { background: #1d4ed8; }
+            .link { background: none; border: none; color: #6b7280; font-size: 12px; cursor: pointer; text-decoration: underline; padding: 0; }
+            #status { margin-top: 10px; font-size: 12px; color: #4b5563; white-space: pre-wrap; word-break: break-word; }
+            #status.err { color: #b91c1c; }
+            #status.ok { color: #15803d; }
+            .hint { color: #6b7280; font-size: 11px; line-height: 1.6; }
+            .hidden { display: none !important; }
+        </style>
+    </head>
+    <body>
+        <h1 data-i18n="title">SQL Query</h1>
+        <div class="subtitle" data-i18n="subtitle">
+            Pull rows from a database into a block. Run again to refresh it.
+        </div>
+
+        <div id="unavailable" class="card hidden">
+            <div data-i18n="unavailable">
+                This craft needs database connections, which only the LogiSheets desktop app provides.
+            </div>
+        </div>
+
+        <div id="main" class="card hidden">
+            <div class="row">
+                <label class="field" for="conn" data-i18n="connection">Connection</label>
+                <select id="conn"></select>
+                <button id="manage" class="btn" type="button" data-i18n="manage">Manage…</button>
+            </div>
+            <div class="row">
+                <label class="field" for="sql" data-i18n="sql">SQL</label>
+            </div>
+            <textarea id="sql" spellcheck="false" placeholder="SELECT * FROM orders WHERE created_at > now() - interval '7 days'"></textarea>
+            <div class="row">
+                <label class="field">
+                    <span data-i18n="maxRows">Max rows</span>
+                    <input id="max" type="number" min="1" max="100000" step="1" />
+                </label>
+                <span style="flex: 1"></span>
+                <button id="run" class="btn btn-primary" type="button" data-i18n="run">Run</button>
+            </div>
+            <div class="row">
+                <span id="targetInfo" class="hint"></span>
+                <button id="detach" class="link hidden" type="button" data-i18n="detach">Write the next run to a new block</button>
+            </div>
+            <div id="status"></div>
+        </div>
+
+        <div class="hint" data-i18n="footnote">
+            Queries run read-only. Your password stays in the app's system keychain; this sheet saves only the SQL and which connection it used.
+        </div>
+
+        <script src="./sql-query.js"></script>
+        <script>
+            const Q = window.LogiSheetsSqlQuery
+
+            var STRINGS = {
+                en: {
+                    title: 'SQL Query',
+                    subtitle: 'Pull rows from a database into a block. Run again to refresh it.',
+                    unavailable: 'This craft needs database connections, which only the LogiSheets desktop app provides.',
+                    connection: 'Connection',
+                    manage: 'Manage…',
+                    sql: 'SQL',
+                    maxRows: 'Max rows',
+                    run: 'Run',
+                    detach: 'Write the next run to a new block',
+                    footnote: "Queries run read-only. Your password stays in the app's system keychain; this sheet saves only the SQL and which connection it used.",
+                    noConnections: 'No connections yet — add one',
+                    pick: 'Pick a connection first.',
+                    missingConn: 'The connection this sheet used is not on this computer. Pick one, or add it with Manage….',
+                    emptySql: 'Write a query first.',
+                    running: 'Running…',
+                    written: '{n} rows written.',
+                    truncated: '{n} rows written — the result had more; raise Max rows to get them.',
+                    targetNew: 'The result goes into a new block under the data on this sheet.',
+                    targetBlock: 'Refreshes the block at row {row}, column {col} on sheet {sheet}.',
+                    rejected: 'The sheet rejected the result: {msg}',
+                },
+                'zh-CN': {
+                    title: 'SQL 查询',
+                    subtitle: '把数据库中的行拉入一个块。再次运行即可刷新。',
+                    unavailable: '这个挂件需要数据库连接，目前只有 LogiSheets 桌面版提供。',
+                    connection: '连接',
+                    manage: '管理…',
+                    sql: 'SQL',
+                    maxRows: '最多行数',
+                    run: '运行',
+                    detach: '下次运行写入新的块',
+                    footnote: '查询以只读方式运行。密码保存在应用的系统钥匙串中；此表格只保存 SQL 和所用的连接。',
+                    noConnections: '还没有连接——添加一个',
+                    pick: '请先选择一个连接。',
+                    missingConn: '此表格使用的连接不在这台电脑上。请选择一个，或通过“管理…”添加。',
+                    emptySql: '请先写一个查询。',
+                    running: '运行中…',
+                    written: '已写入 {n} 行。',
+                    truncated: '已写入 {n} 行——结果还有更多；调高“最多行数”即可获取。',
+                    targetNew: '结果将写入此表中现有数据下方的新块。',
+                    targetBlock: '刷新工作表 {sheet} 第 {row} 行第 {col} 列的块。',
+                    rejected: '表格拒绝了结果：{msg}',
+                },
+            }
+            // NOT `var locale` — that is window.locale, which the host owns.
+            var craftLocale = 'en'
+
+            function urlLocale() {
+                try {
+                    return new URLSearchParams(location.search).get('lang') || undefined
+                } catch (e) {
+                    return undefined
+                }
+            }
+
+            function tr(key, params) {
+                var s = STRINGS[craftLocale][key] || STRINGS.en[key] || key
+                Object.keys(params || {}).forEach(function (k) {
+                    s = s.replace('{' + k + '}', String(params[k]))
+                })
+                return s
+            }
+
+            function applyLocale(tag) {
+                var want = tag || urlLocale()
+                craftLocale = STRINGS[want] ? want : String(want || '').startsWith('zh') ? 'zh-CN' : 'en'
+                document.documentElement.lang = craftLocale
+                document.querySelectorAll('[data-i18n]').forEach(function (el) {
+                    el.textContent = tr(el.getAttribute('data-i18n'))
+                })
+                if (state) renderTarget()
+            }
+
+            const $ = (id) => document.getElementById(id)
+            let state = null
+            let connections = []
+
+            function whenReady(fn) {
+                if (window.workbook && window.selection) return fn()
+                setTimeout(() => whenReady(fn), 40)
+            }
+
+            function setStatus(text, cls) {
+                $('status').textContent = text || ''
+                $('status').className = cls || ''
+            }
+
+            function save() {
+                // The SQL and a connection ID — nothing that unlocks the database.
+                window.setCraftState?.(JSON.stringify(state))
+            }
+
+            function unwrap(v, what) {
+                const e = Q.errOf(v)
+                if (e !== null) throw new Error(`${what}: ${e}`)
+                return v
+            }
+
+            function renderTarget() {
+                const t = state.target
+                $('targetInfo').textContent = t
+                    ? tr('targetBlock', {row: t.masterRow + 1, col: t.masterCol + 1, sheet: t.sheetIdx + 1})
+                    : tr('targetNew')
+                $('detach').classList.toggle('hidden', !t)
+            }
+
+            async function loadConnections() {
+                const sel = $('conn')
+                // Keep what the user picked across a re-list.
+                const picked = sel.value || state.connId
+                try {
+                    connections = await window.dataConnections.list()
+                } catch (e) {
+                    connections = []
+                    setStatus(String(e && e.message ? e.message : e), 'err')
+                }
+                sel.innerHTML = ''
+                if (!connections.length) {
+                    const o = document.createElement('option')
+                    o.value = ''
+                    o.textContent = tr('noConnections')
+                    sel.appendChild(o)
+                    return
+                }
+                connections.forEach((c) => {
+                    const o = document.createElement('option')
+                    o.value = c.id
+                    o.textContent = c.name
+                    sel.appendChild(o)
+                })
+                if (picked && connections.some((c) => c.id === picked)) {
+                    sel.value = picked
+                } else if (picked) {
+                    sel.value = ''
+                    setStatus(tr('missingConn'), 'err')
+                }
+            }
+
+            /** Under everything already on the sheet, so runs never overlap data. */
+            async function nextFreeRow(sheetIdx) {
+                // getSheetDimension takes a BARE index, unlike getAllBlocks.
+                const dim = unwrap(await window.workbook.getSheetDimension(sheetIdx), 'getSheetDimension')
+                return dim.maxRow > 0 ? dim.maxRow + 2 : 0
+            }
+
+            /** The block a previous run wrote, if it is still there and still ours. */
+            async function liveTarget() {
+                const t = state.target
+                if (!t) return null
+                const blocks = unwrap(await window.workbook.getAllBlocks({sheetIdx: t.sheetIdx}), 'getAllBlocks')
+                const b = blocks.find((x) => x.blockId === t.blockId && x.owner === Q.OWNER)
+                // The user may have moved it; refresh it where it is now.
+                return b ? {...t, masterRow: b.rowStart, masterCol: b.colStart} : null
+            }
+
+            async function run() {
+                const connId = $('conn').value
+                const sql = $('sql').value.trim()
+                state.sql = $('sql').value
+                state.maxRows = Math.max(1, Math.min(100000, Number($('max').value) || Q.DEFAULT_MAX_ROWS))
+                if (!connId) return setStatus(tr('pick'), 'err')
+                if (!sql) return setStatus(tr('emptySql'), 'err')
+                state.connId = connId
+                save()
+
+                setStatus(tr('running'))
+                const result = await window.dataConnections.query(connId, sql, {maxRows: state.maxRows})
+
+                const live = await liveTarget()
+                let target
+                if (live) {
+                    // Same place, id and ref name, so formulas naming the
+                    // block survive the refresh.
+                    target = live
+                } else {
+                    const sheetIdx = window.selection.sheetIdx
+                    const blockId = unwrap(await window.workbook.getAvailableBlockId({sheetIdx}), 'getAvailableBlockId')
+                    target = {
+                        sheetIdx,
+                        blockId,
+                        masterRow: await nextFreeRow(sheetIdx),
+                        masterCol: 0,
+                        refName: Q.refNameFor(sheetIdx, blockId),
+                    }
+                }
+                const conn = connections.find((c) => c.id === connId)
+                const description =
+                    `Result of a SQL query on the "${conn ? conn.name : connId}" connection, ` +
+                    `written by the sql-query craft; re-running the query replaces it. Query: ` +
+                    sql.slice(0, 500)
+                const payloads = Q.writeResultPayloads({
+                    target,
+                    result,
+                    description,
+                    replaceBlockId: live ? live.blockId : undefined,
+                })
+                // handleTransaction RESOLVES on failure — read the status back.
+                const r = await window.workbook.handleTransaction({transaction: Q.buildTransaction(payloads)})
+                if (r && r.status && r.status.type === 'err') {
+                    return setStatus(tr('rejected', {msg: r.status.value ?? ''}), 'err')
+                }
+                state.target = target
+                save()
+                renderTarget()
+                window.setSelection?.(target.sheetIdx, target.masterRow, target.masterCol)
+                const n = result.rows.length
+                setStatus(result.truncated ? tr('truncated', {n}) : tr('written', {n}), result.truncated ? '' : 'ok')
+            }
+
+            applyLocale()
+
+            whenReady(() => {
+                applyLocale(window.locale)
+                if (window.onLocaleChange) window.onLocaleChange(applyLocale)
+
+                state = Q.parseState(window.getCraftState?.())
+                $('sql').value = state.sql
+                $('max').value = String(state.maxRows)
+                renderTarget()
+
+                // Declared in craftRequires, and checked anyway: a craft loaded
+                // from source skips the install check, and a host may lack it.
+                if (!window.dataConnections) {
+                    $('unavailable').classList.remove('hidden')
+                    return
+                }
+                $('main').classList.remove('hidden')
+                void loadConnections()
+
+                // The manager is the host's dialog; re-list when the user comes back.
+                $('manage').onclick = () => window.dataConnections.openManager()
+                window.addEventListener('focus', () => void loadConnections())
+
+                $('detach').onclick = () => {
+                    state.target = undefined
+                    save()
+                    renderTarget()
+                }
+                $('run').onclick = async () => {
+                    $('run').disabled = true
+                    try {
+                        await run()
+                    } catch (e) {
+                        setStatus(String(e && e.message ? e.message : e), 'err')
+                    } finally {
+                        $('run').disabled = false
+                    }
+                }
+            })
+        </script>
+    </body>
+</html>
