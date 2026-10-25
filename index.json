@@ -1,0 +1,257 @@
+{
+  "schemaVersion": 1,
+  "crafts": [
+    {
+      "craftId": "debugger",
+      "versions": [
+        {
+          "version": "0.1.0",
+          "hostApi": 1,
+          "url": "packages/debugger/debugger-0.1.0.craft",
+          "sha256": "231f90d8400b32fc0ba397c50178558295e1ab2b567df62df4361e3f00430a0c",
+          "size": 8158,
+          "publishedAt": "2026-10-25T06:29:45.781Z"
+        }
+      ],
+      "label": "Debugger (dev)",
+      "labels": {
+        "en": "Debugger (dev)",
+        "zh-CN": "Debugger (dev)"
+      },
+      "description": "Dev-only craft: build big/realistic blocks in one click, then poke at them",
+      "publisher": "Jeremy He",
+      "hasUi": true,
+      "unlisted": true,
+      "tools": [],
+      "latest": "0.1.0"
+    },
+    {
+      "craftId": "four-elements",
+      "versions": [
+        {
+          "version": "0.1.0",
+          "hostApi": 1,
+          "url": "packages/four-elements/four-elements-0.1.0.craft",
+          "sha256": "c77217cb39a49a3d36b5f9c37a0b6644a9ece5aeeaff7ff354bf649c84496729",
+          "size": 27436,
+          "publishedAt": "2026-10-25T06:29:45.781Z"
+        }
+      ],
+      "label": "Four Elements",
+      "labels": {
+        "en": "Four Elements",
+        "zh-CN": "四象"
+      },
+      "description": "四象 — a draft-and-commit card duel whose rules live in the workbook as blocks and formulas",
+      "publisher": "Jeremy He",
+      "hasUi": true,
+      "tools": [
+        "get_rules",
+        "get_state",
+        "get_windows",
+        "get_score",
+        "get_draft"
+      ],
+      "latest": "0.1.0"
+    },
+    {
+      "craftId": "fuse-beads",
+      "versions": [
+        {
+          "version": "0.1.0",
+          "hostApi": 1,
+          "url": "packages/fuse-beads/fuse-beads-0.1.0.craft",
+          "sha256": "24e0633ce1df528c0220bd559e825d295074821c1b6cf35ab54e76e00ec98db5",
+          "size": 15014,
+          "publishedAt": "2026-10-25T06:29:45.781Z"
+        }
+      ],
+      "label": "Fuse Beads",
+      "labels": {
+        "en": "Fuse Beads",
+        "zh-CN": "电子拼豆"
+      },
+      "description": "Electronic fuse-beads (拼豆): paint a MARD-style bead board on a LogiSheets worksheet",
+      "publisher": "Jeremy He",
+      "hasUi": true,
+      "tools": [],
+      "latest": "0.1.0"
+    },
+    {
+      "craftId": "lights-out",
+      "versions": [
+        {
+          "version": "0.1.0",
+          "hostApi": 1,
+          "url": "packages/lights-out/lights-out-0.1.0.craft",
+          "sha256": "1229089a955c9891c7f799d5d9099455a6a425a877a7dd5df4a6e046b1ac7968",
+          "size": 13450,
+          "publishedAt": "2026-10-25T06:29:45.781Z"
+        }
+      ],
+      "label": "Lights Out",
+      "labels": {
+        "en": "Lights Out",
+        "zh-CN": "关灯"
+      },
+      "description": "Lights Out puzzle on a LogiSheets grid — toggle a cell + its neighbors, turn every light off",
+      "publisher": "Jeremy He",
+      "hasUi": true,
+      "tools": [
+        "solve_lights_out",
+        "hint_lights_out",
+        "start_lights_out",
+        "lights_out_status"
+      ],
+      "latest": "0.1.0"
+    },
+    {
+      "craftId": "markdown-table-extractor",
+      "versions": [
+        {
+          "version": "0.1.0",
+          "hostApi": 1,
+          "url": "packages/markdown-table-extractor/markdown-table-extractor-0.1.0.craft",
+          "sha256": "d58d145631cb72553070e354854f0145fe45ca2d8d16b9f4f267a0ae4959d5e2",
+          "size": 61374,
+          "publishedAt": "2026-10-25T06:29:45.781Z"
+        }
+      ],
+      "label": "Markdown Table Extractor",
+      "labels": {
+        "en": "Markdown Table Extractor",
+        "zh-CN": "Markdown 表格提取"
+      },
+      "description": "Parse GitHub-flavored Markdown tables into structured JSON (UMD bundle)",
+      "publisher": "Jeremy He",
+      "hasUi": true,
+      "tools": [],
+      "latest": "0.1.0"
+    },
+    {
+      "craftId": "memory-grid",
+      "versions": [
+        {
+          "version": "0.1.0",
+          "hostApi": 1,
+          "url": "packages/memory-grid/memory-grid-0.1.0.craft",
+          "sha256": "1d4881f28d43a73a5fb0d278f217402f99a480d2d81d6b4ac3c83566cbdb755e",
+          "size": 12492,
+          "publishedAt": "2026-10-25T06:29:45.781Z"
+        }
+      ],
+      "label": "Memory Grid",
+      "labels": {
+        "en": "Memory Grid",
+        "zh-CN": "记忆挑战"
+      },
+      "description": "A 24-level memory game on an 8x8 LogiSheets grid: recall flashed colors/numbers",
+      "publisher": "Jeremy He",
+      "hasUi": true,
+      "tools": [],
+      "latest": "0.1.0"
+    },
+    {
+      "craftId": "minesweeper",
+      "versions": [
+        {
+          "version": "0.1.0",
+          "hostApi": 1,
+          "url": "packages/minesweeper/minesweeper-0.1.0.craft",
+          "sha256": "2fe921628bcb3ee539f4ab782b2c234d8ac22fccdd9dda8df33630810579bb43",
+          "size": 10016,
+          "publishedAt": "2026-10-25T06:29:45.781Z"
+        }
+      ],
+      "label": "Minesweeper",
+      "labels": {
+        "en": "Minesweeper",
+        "zh-CN": "扫雷"
+      },
+      "description": "Minesweeper on a LogiSheets grid — left-click to reveal, right-click to flag",
+      "publisher": "Jeremy He",
+      "hasUi": true,
+      "tools": [],
+      "latest": "0.1.0"
+    },
+    {
+      "craftId": "sql-query",
+      "versions": [
+        {
+          "version": "0.1.0",
+          "hostApi": 1,
+          "requires": [
+            "dataConnections"
+          ],
+          "url": "packages/sql-query/sql-query-0.1.0.craft",
+          "sha256": "cad28b924b7bd78c81a9cd16fd13a4f77f9f2ddcfad09737794753166327b47d",
+          "size": 8099,
+          "publishedAt": "2026-10-25T06:29:45.781Z"
+        }
+      ],
+      "label": "SQL Query",
+      "labels": {
+        "en": "SQL Query",
+        "zh-CN": "SQL 查询"
+      },
+      "description": "Run SQL against a database connection the app holds and pull the result into a typed block; re-run to refresh",
+      "publisher": "Jeremy He",
+      "hasUi": true,
+      "tools": [],
+      "latest": "0.1.0"
+    },
+    {
+      "craftId": "sudoku",
+      "versions": [
+        {
+          "version": "0.1.0",
+          "hostApi": 1,
+          "url": "packages/sudoku/sudoku-0.1.0.craft",
+          "sha256": "a7af91ab1dea723a3660ea44e179762c64fe2d5f1b679e7a8714ff9966950c17",
+          "size": 14077,
+          "publishedAt": "2026-10-25T06:29:45.781Z"
+        }
+      ],
+      "label": "Sudoku",
+      "labels": {
+        "en": "Sudoku",
+        "zh-CN": "数独"
+      },
+      "description": "Sudoku on a LogiSheets grid — type into cells, conflicts checked live by spreadsheet formulas",
+      "publisher": "Jeremy He",
+      "hasUi": true,
+      "tools": [
+        "solve_sudoku",
+        "new_sudoku",
+        "check_sudoku"
+      ],
+      "latest": "0.1.0"
+    },
+    {
+      "craftId": "what-if-calculator",
+      "versions": [
+        {
+          "version": "0.1.0",
+          "hostApi": 1,
+          "url": "packages/what-if-calculator/what-if-calculator-0.1.0.craft",
+          "sha256": "34c75cc057302e6040f16f7f1f81b00ee11e663d6fa9c020f9668c2355f74149",
+          "size": 9809,
+          "publishedAt": "2026-10-25T06:29:45.781Z"
+        }
+      ],
+      "label": "What-if Calculator",
+      "labels": {
+        "en": "What-if Calculator",
+        "zh-CN": "假设分析计算器"
+      },
+      "description": "Show trends in LogiSheets workbooks for analysis",
+      "publisher": "Jeremy He",
+      "hasUi": true,
+      "tools": [
+        "preview_what_if",
+        "apply_what_if"
+      ],
+      "latest": "0.1.0"
+    }
+  ]
+}
