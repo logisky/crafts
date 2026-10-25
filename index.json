@@ -187,6 +187,17 @@
           "sha256": "cad28b924b7bd78c81a9cd16fd13a4f77f9f2ddcfad09737794753166327b47d",
           "size": 8099,
           "publishedAt": "2026-10-25T06:29:45.781Z"
+        },
+        {
+          "version": "0.2.0",
+          "hostApi": 1,
+          "requires": [
+            "dataConnections"
+          ],
+          "url": "packages/sql-query/sql-query-0.2.0.craft",
+          "sha256": "15a0f5e6a746175cd3b00363b392655248c7dd6dd11075d999151f602964035b",
+          "size": 184801,
+          "publishedAt": "2026-10-25T08:07:40.164Z"
         }
       ],
       "label": "SQL Query",
@@ -198,7 +209,7 @@
       "publisher": "Jeremy He",
       "hasUi": true,
       "tools": [],
-      "latest": "0.1.0"
+      "latest": "0.2.0"
     },
     {
       "craftId": "sudoku",
