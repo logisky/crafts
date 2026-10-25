@@ -46,6 +46,14 @@ working across refreshes. This needs an engine with logisky/LogiSheets#528,
 which made `removeBlock` free the id's state within the transaction. *Write the next run
 to a new block* forgets it, so the next run starts a new block.
 
+## Who may change the block
+
+The result is imported data, not the craft's own state, so the block is
+created with `owner: "sql-query"` and `modifyPolicy: "ownerAndUser"`: the
+person can edit, sort or delete it like any table, the craft can refresh it,
+and other crafts cannot touch it. After a delete, the next run starts a new
+block.
+
 ## Where a new block goes
 
 At the top-left of the user's selection (column A of a selected row, row 1 of

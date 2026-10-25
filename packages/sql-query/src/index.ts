@@ -265,6 +265,11 @@ export function writeResultPayloads(opts: WriteOptions): EditPayload[] {
             rowCnt: result.rows.length + 1,
             colCnt: cols,
             owner: OWNER,
+            // Imported data, not an app's state: the person may edit, sort or
+            // delete it like any table. An owner with no policy would lock
+            // them out (the host falls back to owner-only); `ownerAndUser`
+            // still keeps other crafts off it, and the craft can refresh it.
+            modifyPolicy: 'ownerAndUser',
             description: opts.description,
         },
     } as EditPayload)

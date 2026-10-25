@@ -48,7 +48,7 @@ cp -R site ../LogiSheets/public/registry-test
 ```
 
 Browse then lists your build. Or install a package by hand from the craft
-panel (puzzle-piece button → **Install from file…**).
+panel (gear button, **Manage crafts** → **Install from file…**).
 
 ## Publishing rules
 

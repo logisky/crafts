@@ -91,6 +91,11 @@ describe('writeResultPayloads', () => {
         const p = writeResultPayloads({target, result, description: 'd'})
         expect(p[0].type).toBe('createBlock')
         expect((p[0].value as {rowCnt: number}).rowCnt).toBe(3)
+        // The person can delete or edit the imported table; other crafts cannot.
+        expect(p[0].value).toMatchObject({
+            owner: 'sql-query',
+            modifyPolicy: 'ownerAndUser',
+        })
         const inputs = p.filter((x) => x.type === 'blockInput')
         expect(inputs).toHaveLength(2 + 3)
         const schema = p.find((x) => x.type === 'bindFormSchema')!.value as {
