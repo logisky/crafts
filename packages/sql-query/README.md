@@ -44,5 +44,18 @@ long as it still exists and is still owned by `sql-query`. The block keeps its
 id and ref name (`sql_<sheet>_<block>`), so a formula that names it keeps
 working across refreshes. This needs an engine with logisky/LogiSheets#528,
 which made `removeBlock` free the id's state within the transaction. *Write the next run
-to a new block* forgets it, so the next run starts a new block under the
-sheet's data.
+to a new block* forgets it, so the next run starts a new block.
+
+## Where a new block goes
+
+At the top-left of the user's selection (column A of a selected row, row 1 of
+a selected column); with nothing selected, under the sheet's data. The craft
+never writes over anything: if the area the result needs (a header row plus
+one row per result row) has a value, a formula or another block in it, the run
+is refused and the user is asked to pick an empty cell.
+
+## Editor
+
+CodeMirror 6 with `@codemirror/lang-sql`: keywords highlight in the selected
+connection's dialect (PostgreSQL, MySQL or SQLite), and ⌘/Ctrl + Enter runs
+the query.

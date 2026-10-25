@@ -5,7 +5,7 @@
         "en": "SQL Query",
         "zh-CN": "SQL 查询"
     },
-    "version": "0.1.0",
+    "version": "0.2.0",
     "description": "Run SQL against a database connection the app holds and pull the result into a typed block; re-run to refresh",
     "craftRequires": [
         "dataConnections"
@@ -21,6 +21,12 @@
     "author": "Jeremy He",
     "license": "MIT",
     "dependencies": {
+        "@codemirror/commands": "^6.8.0",
+        "@codemirror/lang-sql": "^6.8.0",
+        "@codemirror/language": "^6.10.0",
+        "@codemirror/state": "^6.5.0",
+        "@codemirror/view": "^6.36.0",
+        "@lezer/highlight": "^1.2.0",
         "logisheets-web": "^1.16.1"
     },
     "devDependencies": {

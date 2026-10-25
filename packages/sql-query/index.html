@@ -17,17 +17,13 @@
                 padding: 12px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(15,23,42,0.06);
             }
             .row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-            .row + .row, .row + textarea, textarea + .row { margin-top: 10px; }
+            .row + .row, .row + #sql, #sql + .row { margin-top: 10px; }
             label.field { display: inline-flex; align-items: center; gap: 6px; color: #4b5563; }
-            select, input, textarea {
+            select, input {
                 font: inherit; padding: 6px 8px; border: 1px solid #d1d5db; border-radius: 6px; background: #fff;
             }
             select { flex: 1; min-width: 140px; }
             input[type=number] { width: 90px; }
-            textarea {
-                display: block; width: 100%; min-height: 140px; resize: vertical;
-                font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 12px;
-            }
             .btn {
                 display: inline-flex; align-items: center; justify-content: center;
                 padding: 6px 14px; font-size: 13px; border-radius: 999px;
@@ -64,9 +60,10 @@
                 <button id="manage" class="btn" type="button" data-i18n="manage">Manage…</button>
             </div>
             <div class="row">
-                <label class="field" for="sql" data-i18n="sql">SQL</label>
+                <label class="field" data-i18n="sql">SQL</label>
+                <span class="hint" data-i18n="runShortcut">⌘/Ctrl + Enter to run</span>
             </div>
-            <textarea id="sql" spellcheck="false" placeholder="SELECT * FROM orders WHERE created_at > now() - interval '7 days'"></textarea>
+            <div id="sql"></div>
             <div class="row">
                 <label class="field">
                     <span data-i18n="maxRows">Max rows</span>
@@ -110,6 +107,9 @@
                     written: '{n} rows written.',
                     truncated: '{n} rows written — the result had more; raise Max rows to get them.',
                     targetNew: 'The result goes into a new block under the data on this sheet.',
+                    targetNewAt: 'The result goes into a new block starting at {cell}, the selected cell.',
+                    occupied: 'The result needs {rows} rows × {cols} columns from {cell}, but that area is not empty. Select an empty cell and run again.',
+                    runShortcut: '⌘/Ctrl + Enter to run',
                     targetBlock: 'Refreshes the block at row {row}, column {col} on sheet {sheet}.',
                     rejected: 'The sheet rejected the result: {msg}',
                 },
@@ -132,6 +132,9 @@
                     written: '已写入 {n} 行。',
                     truncated: '已写入 {n} 行——结果还有更多；调高“最多行数”即可获取。',
                     targetNew: '结果将写入此表中现有数据下方的新块。',
+                    targetNewAt: '结果将从选中的单元格 {cell} 开始写入新块。',
+                    occupied: '结果需要从 {cell} 开始的 {rows} 行 × {cols} 列，但这片区域不是空的。请选中一个空单元格后重新运行。',
+                    runShortcut: '⌘/Ctrl + Enter 运行',
                     targetBlock: '刷新工作表 {sheet} 第 {row} 行第 {col} 列的块。',
                     rejected: '表格拒绝了结果：{msg}',
                 },
@@ -156,7 +159,9 @@
             }
 
             function applyLocale(tag) {
-                var want = tag || urlLocale()
+                // An installed craft has no ?lang= (its page is a blob URL); the
+                // host presets window.locale before any script runs instead.
+                var want = tag || window.locale || urlLocale()
                 craftLocale = STRINGS[want] ? want : String(want || '').startsWith('zh') ? 'zh-CN' : 'en'
                 document.documentElement.lang = craftLocale
                 document.querySelectorAll('[data-i18n]').forEach(function (el) {
@@ -168,6 +173,7 @@
             const $ = (id) => document.getElementById(id)
             let state = null
             let connections = []
+            let editor = null
 
             function whenReady(fn) {
                 if (window.workbook && window.selection) return fn()
@@ -192,9 +198,12 @@
 
             function renderTarget() {
                 const t = state.target
+                const at = Q.anchorOf(window.selection && window.selection.data)
                 $('targetInfo').textContent = t
                     ? tr('targetBlock', {row: t.masterRow + 1, col: t.masterCol + 1, sheet: t.sheetIdx + 1})
-                    : tr('targetNew')
+                    : at
+                      ? tr('targetNewAt', {cell: Q.a1(at.row, at.col)})
+                      : tr('targetNew')
                 $('detach').classList.toggle('hidden', !t)
             }
 
@@ -228,6 +237,13 @@
                     sel.value = ''
                     setStatus(tr('missingConn'), 'err')
                 }
+                syncDialect()
+            }
+
+            /** Highlight the selected connection's SQL dialect. */
+            function syncDialect() {
+                const c = connections.find((x) => x.id === $('conn').value)
+                editor?.setDialect(c ? c.kind : undefined)
             }
 
             /** Under everything already on the sheet, so runs never overlap data. */
@@ -249,8 +265,8 @@
 
             async function run() {
                 const connId = $('conn').value
-                const sql = $('sql').value.trim()
-                state.sql = $('sql').value
+                const sql = editor.getValue().trim()
+                state.sql = editor.getValue()
                 state.maxRows = Math.max(1, Math.min(100000, Number($('max').value) || Q.DEFAULT_MAX_ROWS))
                 if (!connId) return setStatus(tr('pick'), 'err')
                 if (!sql) return setStatus(tr('emptySql'), 'err')
@@ -267,13 +283,35 @@
                     // block survive the refresh.
                     target = live
                 } else {
+                    // A new block starts at the selected cell; with nothing
+                    // selected, under the sheet's data.
                     const sheetIdx = window.selection.sheetIdx
+                    const at = Q.anchorOf(window.selection.data) || {row: await nextFreeRow(sheetIdx), col: 0}
+                    // Never write over what is there: refuse and let the user
+                    // pick an empty spot.
+                    const size = Q.blockSize(result)
+                    const cells = unwrap(
+                        await window.workbook.getCells({
+                            sheetIdx,
+                            startRow: at.row,
+                            startCol: at.col,
+                            endRow: at.row + size.rows - 1,
+                            endCol: at.col + size.cols - 1,
+                        }),
+                        'getCells'
+                    )
+                    if (!Q.isAreaFree(cells)) {
+                        return setStatus(
+                            tr('occupied', {rows: size.rows, cols: size.cols, cell: Q.a1(at.row, at.col)}),
+                            'err'
+                        )
+                    }
                     const blockId = unwrap(await window.workbook.getAvailableBlockId({sheetIdx}), 'getAvailableBlockId')
                     target = {
                         sheetIdx,
                         blockId,
-                        masterRow: await nextFreeRow(sheetIdx),
-                        masterCol: 0,
+                        masterRow: at.row,
+                        masterCol: at.col,
                         refName: Q.refNameFor(sheetIdx, blockId),
                     }
                 }
@@ -308,9 +346,10 @@
                 if (window.onLocaleChange) window.onLocaleChange(applyLocale)
 
                 state = Q.parseState(window.getCraftState?.())
-                $('sql').value = state.sql
                 $('max').value = String(state.maxRows)
                 renderTarget()
+                // The hint names the selected cell; keep it current.
+                window.onSelectionChange?.(() => renderTarget())
 
                 // Declared in craftRequires, and checked anyway: a craft loaded
                 // from source skips the install check, and a host may lack it.
@@ -319,6 +358,15 @@
                     return
                 }
                 $('main').classList.remove('hidden')
+                editor = Q.createSqlEditor($('sql'), {
+                    doc: state.sql,
+                    placeholder: "SELECT * FROM orders WHERE created_at > now() - interval '7 days'",
+                    onChange: (text) => {
+                        state.sql = text
+                    },
+                    onRun: () => $('run').click(),
+                })
+                $('conn').addEventListener('change', syncDialect)
                 void loadConnections()
 
                 // The manager is the host's dialog; re-list when the user comes back.

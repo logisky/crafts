@@ -5,6 +5,10 @@ import {
     parseState,
     writeResultPayloads,
     type DataQueryResult,
+    a1,
+    anchorOf,
+    blockSize,
+    isAreaFree,
 } from './index'
 
 describe('cellInput', () => {
@@ -101,5 +105,59 @@ describe('writeResultPayloads', () => {
         expect(p[0]).toEqual({type: 'removeBlock', value: {sheetIdx: 0, id: 7}})
         expect(p[1].type).toBe('createBlock')
         expect((p[1].value as {id: number}).id).toBe(7)
+    })
+})
+
+describe('placement', () => {
+    it('anchors at the top-left of the selected cells', () => {
+        expect(
+            anchorOf({data: {ty: 'cellRange', d: {startRow: 4, startCol: 1}}})
+        ).toEqual({row: 4, col: 1})
+    })
+
+    it('anchors a selected row at column A and a column at row 1', () => {
+        expect(anchorOf({data: {ty: 'line', d: {start: 7, type: 'row'}}})).toEqual(
+            {row: 7, col: 0}
+        )
+        expect(anchorOf({data: {ty: 'line', d: {start: 3, type: 'col'}}})).toEqual(
+            {row: 0, col: 3}
+        )
+    })
+
+    it('has no anchor without a selection', () => {
+        expect(anchorOf({})).toBeUndefined()
+        expect(anchorOf(undefined)).toBeUndefined()
+    })
+
+    it('names cells A1-style', () => {
+        expect(a1(0, 0)).toBe('A1')
+        expect(a1(4, 1)).toBe('B5')
+        expect(a1(0, 25)).toBe('Z1')
+        expect(a1(0, 26)).toBe('AA1')
+        expect(a1(9, 701)).toBe('ZZ10')
+        expect(a1(0, 702)).toBe('AAA1')
+    })
+
+    it('treats only empty, formula-free, block-free cells as free', () => {
+        expect(isAreaFree([{value: 'empty', formula: ''}])).toBe(true)
+        expect(isAreaFree([{value: {type: 'number', value: 1}}])).toBe(false)
+        expect(isAreaFree([{value: 'empty', formula: 'A1'}])).toBe(false)
+        expect(isAreaFree([{value: 'empty', blockId: 3}])).toBe(false)
+    })
+
+    it('sizes a block as header plus rows', () => {
+        expect(
+            blockSize({
+                columns: [
+                    {name: 'a', type: 'number', dbType: 'int4'},
+                    {name: 'b', type: 'text', dbType: 'text'},
+                ],
+                rows: [
+                    [1, 'x'],
+                    [2, 'y'],
+                ],
+                truncated: false,
+            })
+        ).toEqual({rows: 3, cols: 2})
     })
 })

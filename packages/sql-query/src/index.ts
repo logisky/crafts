@@ -322,3 +322,58 @@ export function writeResultPayloads(opts: WriteOptions): EditPayload[] {
 export function buildTransaction(payloads: readonly EditPayload[]): Transaction {
     return {payloads, undoable: true, temp: false}
 }
+
+/** The selection as the host hands it to a craft (`window.selection.data`). */
+export interface SelectedData {
+    data?:
+        | {ty: 'cellRange'; d: {startRow: number; startCol: number}}
+        | {ty: 'line'; d: {start: number; type: 'row' | 'col'}}
+}
+
+/**
+ * Where a NEW result block goes: the top-left of what the user selected —
+ * column A of a selected row, row 1 of a selected column — or undefined when
+ * nothing is selected (the page then falls back to below the sheet's data).
+ */
+export function anchorOf(
+    sel: SelectedData | undefined
+): {row: number; col: number} | undefined {
+    const d = sel?.data
+    if (!d) return undefined
+    if (d.ty === 'cellRange') return {row: d.d.startRow, col: d.d.startCol}
+    return d.d.type === 'row' ? {row: d.d.start, col: 0} : {row: 0, col: d.d.start}
+}
+
+/** `B5` for row 4, column 1 (both 0-based). */
+export function a1(row: number, col: number): string {
+    let name = ''
+    for (let c = col + 1; c > 0; c = Math.floor((c - 1) / 26))
+        name = String.fromCharCode(65 + ((c - 1) % 26)) + name
+    return `${name}${row + 1}`
+}
+
+/** A cell as `workbook.getCells` returns it — only what `isFree` reads. */
+export interface CellProbe {
+    value: unknown
+    formula?: string
+    blockId?: number
+}
+
+/**
+ * Whether a result can be written over these cells without losing anything:
+ * no value, no formula, and not part of a block. The craft refuses rather
+ * than overwrite — the user picks another cell.
+ */
+export function isAreaFree(cells: readonly CellProbe[]): boolean {
+    return cells.every(
+        (c) => c.value === 'empty' && !c.formula && c.blockId === undefined
+    )
+}
+
+/** The size of the block a result needs: a header line plus one per row. */
+export function blockSize(result: DataQueryResult): {rows: number; cols: number} {
+    return {rows: result.rows.length + 1, cols: Math.max(1, result.columns.length)}
+}
+
+export {createSqlEditor} from './editor'
+export type {SqlEditor, SqlEditorOptions} from './editor'
